@@ -5,12 +5,27 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\GenreRepository;
 use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 /**
  * @ORM\Entity(repositoryClass=GenreRepository::class)
+ * @ApiResource(
+ * itemOperations={
+ * "get_simple"={
+ *     "method" = "GET",
+ *     "path"="/genres/{id}/simple",
+ *     "normalization_context" = {"groups"= {"GenreProp"}}         
+ * },
+ *  "get_full"={
+ *     "method" = "GET",
+ *     "path"="/genres/{id}/full",
+ *     "normalization_context" = {"groups"= {"GenreFull"}}         
+ * }},
+ * collectionOperations={"get"})
  * @UniqueEntity(
  *  fields={"libelle"},
  *  errorPath="port",
@@ -43,6 +58,7 @@ class Genre
     /**
      * @ORM\OneToMany(targetEntity=Livre::class, mappedBy="genre")
      * @Groups({"GenreFull"})
+     * @ApiSubresource
      */
     private $livres;
 
