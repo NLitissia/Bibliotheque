@@ -10,7 +10,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=LivreRepository::class)
- * @ApiResource()
+ * @ApiResource(
+ *    attributes= {
+ *         "order"={
+ *             "titre" : "ASC",
+ *             "prix" : "DESC"
+ *         }
+ *      }
+ * )
  */
 class Livre
 {

@@ -14,18 +14,12 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 /**
  * @ORM\Entity(repositoryClass=GenreRepository::class)
  * @ApiResource(
- * itemOperations={
- * "get_simple"={
- *     "method" = "GET",
- *     "path"="/genres/{id}/simple",
- *     "normalization_context" = {"groups"= {"GenreProp"}}         
- * },
- *  "get_full"={
- *     "method" = "GET",
- *     "path"="/genres/{id}/full",
- *     "normalization_context" = {"groups"= {"GenreFull"}}         
- * }},
- * collectionOperations={"get"})
+ *      attributes={
+ *         "order" = {
+ *                  "libelle": "ASC"
+ *                   }
+ *               }
+ * )
  * @UniqueEntity(
  *  fields={"libelle"},
  *  errorPath="port",
