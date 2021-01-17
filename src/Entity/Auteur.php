@@ -18,25 +18,25 @@ class Auteur
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"GenreFull"})
+     * @Groups({"GenreFull","PropAuteur","Auteurs"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"GenreFull"})
+     * @Groups({"GenreFull","PropAuteur","Auteurs"})
      */
     private $nom;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"GenreFull"})
+     * @Groups({"GenreFull","PropAuteur","Auteurs"})
      */
     private $prenom;
 
     /**
      * @ORM\ManyToOne(targetEntity=Nationalite::class, inversedBy="auteurs")
-     * @groups({"GenreFull"})
+     * @groups({"GenreFull","Auteurs"})
      */
     private $nationalite;
 
