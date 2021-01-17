@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Constraints\Json;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ApiGenreController extends AbstractController
 {
@@ -54,11 +55,18 @@ class ApiGenreController extends AbstractController
      * @Route("/api/genre", name="api_genre_create", methods={"POST"})
      */
     
-     public function create(Request $request,ManagerRegistry $em,SerializerInterface $serializer){
+     public function create(Request $request,ManagerRegistry $em,SerializerInterface $serializer,ValidatorInterface $validator){
         
        $data = $request->getContent();
        $genre = new Genre();
        $serializer->deserialize($data, Genre::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $genre]);
+       
+       //Gestion des erreur de validation
+       $error = $validator->validate($genre);
+       if(count($error)){
+           $errorJson=$serializer->serialize($error,'json');
+           return new JsonResponse($errorJson,Response::HTTP_BAD_REQUEST,[],true);
+       }
        $manager = $em->getManager();
        $manager->persist($genre);
        $manager->flush();

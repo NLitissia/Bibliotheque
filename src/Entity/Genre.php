@@ -7,9 +7,15 @@ use App\Repository\GenreRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
-
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 /**
  * @ORM\Entity(repositoryClass=GenreRepository::class)
+ * @UniqueEntity(
+ *  fields={"libelle"},
+ *  errorPath="port",
+ *  message = "Ce libelle existe déja"
+ * )
  */
 class Genre
 {
@@ -24,6 +30,13 @@ class Genre
     /**
      * @ORM\Column(type="string", length=255)
      * @Groups({"GenreProp", "GenreFull"})
+     * @Assert\Length(
+     *   min=2,
+     *   max=50,
+     *   minMessage="Le Messsage doit contenir au moins {{ limit }} caractéres",
+     *   maxMessage="Le Messsage doit contenir au plus {{ limit }} caractéres"
+     * )
+     * 
      */
     private $libelle;
 
