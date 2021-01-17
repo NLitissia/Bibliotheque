@@ -2,12 +2,14 @@
 
 namespace App\Controller;
 
+use App\Entity\Genre;
 use App\Repository\GenreRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Constraints\Json;
 
 class ApiGenreController extends AbstractController
 {
@@ -29,5 +31,22 @@ class ApiGenreController extends AbstractController
         return new JsonResponse($resultat,200,[],true);
     }
 
+    /**
+     * @Route("/api/genre/{id}", name="api_genre_show",methods={"GET"})
+     */
+    public function show(Genre $genre,SerializerInterface $serializer){
+        
+        $resultat = $serializer->serialize(
+            $genre,
+            'json',
+            [
+                'groups'=>['GenreProp']
+            ]
+            );
+            return new JsonResponse($resultat,Response::HTTP_OK,[],true);
+
+
+
+    }
     
 }

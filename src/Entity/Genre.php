@@ -17,13 +17,13 @@ class Genre
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"GenreProp,GenreFull"})
+     * @Groups({"GenreProp", "GenreFull"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"GenreProp , GenreFull"})
+     * @Groups({"GenreProp", "GenreFull"})
      */
     private $libelle;
 
