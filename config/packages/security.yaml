@@ -4,14 +4,25 @@ security:
           App\Entity\Adherent:
               algorithm: bcrypt
     providers:
-        users_in_memory: { memory: null }
+        in_database:
+            entity:
+               class: App\Entity\Adherent
+               property: email
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
-            anonymous: lazy
-            provider: users_in_memory
+            pattern: ^/apiPlatform
+            stateless: true
+            anonymous: true
+            json_login: 
+                  check_path: /apiPlatform/login_check
+                  success_handler: lexik_jwt_authentication.handler.authentication_success
+                  failure_handler: lexik_jwt_authentication.handler.authentication_failure 
+            guard:
+               authenticators: 
+               - lexik_jwt_authentication.jwt_token_authenticator
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#firewalls-authentication
@@ -22,5 +33,5 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+         - { path: ^/apiPlatform/login_check, roles: ROLE_AuTHENTICATED_ANONYMOSLY }
+         - { path: ^/apiPlatform, roles: IS_AUTHENTICATED_FULLY }
