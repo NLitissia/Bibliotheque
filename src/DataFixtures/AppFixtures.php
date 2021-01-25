@@ -40,7 +40,7 @@ class AppFixtures extends Fixture
     public function loadAdherent(){
         $genre = ['male','female'];
         $commune =["75003","75004","75005","75006","75007","75008","75009","75010","75011","75012","75013","75014","75015","75016","75017","75018","75019","75020"];
-        for($i=0;$i<=20;$i++) {
+        for($i=0;$i<=5;$i++) {
             $adherent = new Adherent();
             $adherent->setNom($this->faker->lastName())
                      ->setPrenom($this->faker->firstName($genre[mt_rand(0,1)]))
@@ -54,17 +54,32 @@ class AppFixtures extends Fixture
              $this->manager->persist($adherent);
             
         }
-        $adherent = new Adherent();
-        $adherent ->setNom("NEGAA")
+        $admin = new Adherent();
+        $rolesAdmin[]= ADHERENT::ROLE_ADMIN;
+        $admin ->setNom("Negaa")
                    ->setPrenom("Litissia")
                    ->setAdresse("Rue Haxo")
                    ->setTelephone("0781347171")
                    ->setCodeCommune("75020")
-                   ->setEmail("Admin@gmail.com")
-                   ->setPassword($this->passwordEncoder->encodePassword($adherent,$adherent->getNom()));
+                   ->setEmail("admin@gmail.com")
+                   ->SetRoles($rolesAdmin)
+                   ->setPassword($this->passwordEncoder->encodePassword($admin,$admin->getNom()));
+                   $this->manager->persist($admin);
 
-          
-          $this->manager->flush();         
+
+       $adherentManger = new Adherent();
+       $roles[]= ADHERENT::ROLE_MANAGER;
+       $adherentManger ->setNom("Lynda")
+                 ->setPrenom("Larras")
+                 ->setAdresse("Rue Haxo")
+                 ->setTelephone("0781347171")
+                 ->setCodeCommune("75020")
+                 ->setEmail("manager@gmail.com")
+                 ->SetRoles($roles)
+                 ->setPassword($this->passwordEncoder->encodePassword($adherentManger,$adherentManger->getNom()));
+           
+        $this->manager->persist($adherentManger);           
+        $this->manager->flush();         
     }
     /**
      * Création des Prets
@@ -72,19 +87,19 @@ class AppFixtures extends Fixture
      * @return void
      */
     public function LoadPret(){
-        for($i=0;$i<=20;$i++){
+        for($i=0;$i<=5;$i++){
             $max = mt_rand(1,5);
             for($j=0;$j<=$max;$j++){
                 $pret = new Pret();
                 $livre = $this->RepoLivre->find(mt_rand(1,49));
                 $pret ->setLivre($livre)
                       ->setAdherent($this->getReference('adherent'.$i))
-                      ->setDatePert($this->faker->dateTimeBetween("-6 months"));
-                $dateRetourPrevu =date('Y-m-d H:m:n',strtotime('15 days',$pret->getDatePert()->getTimestamp()));
+                      ->setDatePret($this->faker->dateTimeBetween("-6 months"));
+                $dateRetourPrevu =date('Y-m-d H:m:n',strtotime('15 days',$pret->getDatePret()->getTimestamp()));
                 $dateRetourPrevu = \DateTime::createFromFormat('Y-m-d H:m:n',$dateRetourPrevu);
-                $pret -> setDateRetourPrevu($dateRetourPrevu);
+                $pret -> setDateRetourPrevue($dateRetourPrevu);
                 if(mt_rand(1,3)==1){
-                    $pret->setDateRetoutRelle($this->faker->dateTimeInInterval($pret->getDatePert(),"+30 days"));
+                    $pret->setDateRetourPrevue($this->faker->dateTimeInInterval($pret->getDatePret(),"+30 days"));
                 }
              $this->manager->persist($pret);
             }

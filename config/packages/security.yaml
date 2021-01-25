@@ -34,9 +34,10 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-         - { path: ^/apiPlatform/login_check, roles: IS_AuTHENTICATED_ANONYMOSLY }
+         - { path: ^/apiPlatform/login_check, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+         - { path: ^/apiPlatform$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
          - { path: ^/apiPlatform, roles: IS_AUTHENTICATED_FULLY }
-         
+
     role_hierarchy:
         ROLE_MANAGER: ROLE_ADHERENT
         ROLE_ADMIN: ROLE_MANAGER
