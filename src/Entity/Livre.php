@@ -2,12 +2,12 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\LivreRepository;
 use ApiPlatform\Core\Annotation\ApiFilter;
+use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
@@ -16,16 +16,54 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  * @ApiResource(
  *    attributes= {
  *         "order"={
- *             "titre" : "ASC",
- *             "prix" : "DESC"
+ *             "titre" : "ASC"
  *         }
- *      }
+ *      },
+ *     collectionOperations={
+ *        "get_role_adherent"={
+ *             "method" = "GET",
+ *             "path" = "/livres",
+ *             "normalization_context" = {
+ *                 "groups"={"get_role_adherent"}
+ *                }
+ *             },
+ *          "post"={
+ *             "method"="POST",
+ *             "access_control"="is_granted('ROLE_MANAGER')",
+ *             "access_control_message"="Vous n'avez pas les droits"
+ *            }
+ *      },
+ *     itemOperations={
+ *       "get_role_item_adherent"={
+ *             "method" = "GET",
+ *             "path" = "/livres/{id}",
+ *             "normalization_context" = {
+ *                 "groups"={"get_role_adherent"}
+ *                }
+ *             },
+ *         "put"={
+ *             "method" = "PUT",
+ *             "path" = "/livres/{id}",
+ *             "access_control"="is_granted('ROLE_MANAGER')",
+ *             "access_control_message"="Vous n'avez pas les droits",
+ *             "denormalization_context"= {
+ *                  "groups"={"put_manager"}
+ *                }
+ *             },
+ *        "delete"={
+ *             "method" = "DELETE",
+ *             "path" = "/livres/{id}",
+ *             "access_control"="is_granted('ROLE_ADMIN')",
+ *             "access_control_message"="Vous n'avez pas les droits"
+ *             }
+ *     }
  * )
  * @ApiFilter(
  *      SearchFilter::class,
  *      properties={
  *          "titre": "ipartial",
- *          "auteur": "exact"
+ *          "auteur": "exact",
+ *          "genre": "exact"
  *      }
  * )
  */
@@ -41,57 +79,66 @@ class Livre
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"GenreFull"})
+     * @Groups({"get_role_adherent","put_manager"})
      */
     private $isbn;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"GenreFull"})
+     * @Groups({"get_role_adherent","put_manager"})
      */
     private $titre;
 
     /**
      * @ORM\Column(type="float")
-     * @Groups({"GenreFull"})
+     * @Groups({"get_role_manager","put_admin"})
      */
     private $prix;
 
     /**
      * @ORM\ManyToOne(targetEntity=Genre::class, inversedBy="livres")
+     * @Groups({"get_role_adherent","put_manager"})
      */
     private $genre;
 
     /**
      * @ORM\ManyToOne(targetEntity=Editeur::class, inversedBy="livres")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"GenreFull"})
+     * @Groups({"get_role_adherent","put_manager"})
      */
     private $editeur;
 
     /**
      * @ORM\ManyToOne(targetEntity=Auteur::class, inversedBy="livres")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"GenreFull"})
+     * @Groups({"get_role_adherent","put_manager"})
      */
     private $auteur;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"GenreFull"})
+     * @Groups({"get_role_adherent","put_manager"})
      */
     private $annee;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"GenreFull"})
+     * @Groups({"get_role_adherent","put_manager"})
      */
     private $langue;
 
     /**
      * @ORM\OneToMany(targetEntity=Pret::class, mappedBy="livre")
+     * @Groups({"get_role_manager"})
      */
     private $prets;
+    
+   /**
+     * @ORM\Column(type="boolean", nullable=true)
+     * @Groups({"get_role_adherent","put_manager"})
+     */
+
+    private $dispo;
 
     public function __construct()
     {
@@ -218,6 +265,17 @@ class Livre
             $pret->setLivre($this);
         }
 
+        return $this;
+    }
+    public function getDispo(): ? bool
+    {
+        return $this->dispo;
+    }
+ 
+    public function setDispo(? bool $dispo): self
+    {
+        $this->dispo = $dispo;
+ 
         return $this;
     }
 

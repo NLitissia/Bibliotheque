@@ -1,113 +1,212 @@
 <?php
-
+ 
 namespace App\Entity;
-
+ 
 use Doctrine\ORM\Mapping as ORM;
-use App\Repository\PretRepository;
+use App\Repository\LivreRepository;
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
-
+use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+ 
 /**
- * @ORM\Entity(repositoryClass=PretRepository::class)
- * @ApiResource()
+ * @ORM\Entity(repositoryClass="App\Repository\PretRepository")
+ * @ApiResource(
+ *      attributes={
+ *          "order"= {
+ *              "datePret":"ASC"
+ *           }
+ *      },
+ *      collectionOperations={
+ *          "get"={
+ *              "method"="GET",
+ *              "path"="/prets",
+ *              "access_control"="is_granted('ROLE_MANAGER')",
+ *              "access_control_message"="Vous n'avez pas les droits d'accéder à cette ressource"
+ *          },
+ *          "post"={
+ *              "method"="POST",
+ *              "path"="/prets",
+ *              "denormalization_context"= {
+ *                  "groups"={"pret_post_role_adherent"}
+ *              }
+ *          }
+ *      },
+ *      itemOperations={
+ *          "get"={
+ *              "method"="GET",
+ *              "path"="/prets/{id}",
+ *              "access_control"="(is_granted('ROLE_ADHERENT') and object.getAdherent() == user) or is_granted('ROLE_MANAGER')",
+ *              "access_control_message" = "Vous ne pouvez avoir accès qu'à vos propres prêts."
+ *           },
+ *          "put"={
+ *              "method"="PUT",
+ *              "path"="/prets/{id}",
+ *              "access_control"="is_granted('ROLE_MANAGER')",
+ *              "access_control_message"="Vous n'avez pas les droits d'accéder à cette ressource",
+ *              "denormalization_context"= {
+ *                  "groups"={"pret_put_manager"}
+ *              }
+ *          },
+ *          "delete"={
+ *              "method"="DELETE",
+ *              "path"="/prets/{id}",
+ *              "access_control"="is_granted('ROLE_MANAGER')",
+ *              "access_control_message"="Vous n'avez pas les droits d'accéder à cette ressource"
+ *          }
+ *      }
+ * )
+ * 
+ * @ApiFilter(
+ *      OrderFilter::class,
+ *      properties={
+ *          "datePret",
+ *          "dateRetourPrevue",
+ *          "dateRetourReelle"
+ *      }
+ * )
+ * 
+ * @ApiFilter(
+ *      SearchFilter::class,
+ *      properties={
+ *          "livre.titre": "ipartial",
+ *          "adherent.id": "exact"
+ *      }
+ * )
+ * 
+ * @ApiFilter(
+ *      DateFilter::class,
+ *      properties={
+ *          "datePret",
+ *          "dateRetourPrevue",
+ *          "dateRetourReelle"
+ *      }
+ * )
+ * @ORM\HasLifecycleCallbacks()
  */
+ 
 class Pret
 {
     /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
+     * @ORM\Id()
+     * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
     private $id;
-
+ 
     /**
      * @ORM\Column(type="datetime")
      */
-    private $datePert;
-
+    private $datePret;
+ 
     /**
      * @ORM\Column(type="datetime")
      */
-    private $DateRetourPrevu;
-
+    private $dateRetourPrevue;
+ 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"pret_put_manager"})
      */
-    private $dateRetoutRelle;
-
+    private $dateRetourReelle;
+ 
     /**
-     * @ORM\ManyToOne(targetEntity=Livre::class, inversedBy="prets")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Livre", inversedBy="prets")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"pret_post_role_adherent"})
      */
     private $livre;
-
+ 
     /**
-     * @ORM\ManyToOne(targetEntity=Adherent::class, inversedBy="prets")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Adherent", inversedBy="prets")
      * @ORM\JoinColumn(nullable=false)
      */
     private $adherent;
-
-    public function getId(): ?int
+ 
+ 
+    public function __construct()
+    {
+        $this->datePret = new \DateTime();
+        $dateRetourPrevue = date('Y-m-d H:m:n', strtotime('15 days', $this->getDatePret()->getTimestamp()));
+        $dateRetourPrevue = \DateTime::createFromFormat('Y-m-d H:m:n', $dateRetourPrevue);
+        $this->dateRetourPrevue = $dateRetourPrevue;
+        $this->dateRetourReelle = null;
+    }
+    public function getId(): ? int
     {
         return $this->id;
     }
-
-    public function getDatePert(): ?\DateTimeInterface
+ 
+    public function getDatePret(): ? \DateTimeInterface
     {
-        return $this->datePert;
+        return $this->datePret;
     }
-
-    public function setDatePert(\DateTimeInterface $datePert): self
+ 
+    public function setDatePret(\DateTimeInterface $datePret): self
     {
-        $this->datePert = $datePert;
-
+        $this->datePret = $datePret;
+ 
         return $this;
     }
-
-    public function getDateRetourPrevu(): ?\DateTimeInterface
+ 
+    public function getDateRetourPrevue(): ? \DateTimeInterface
     {
-        return $this->DateRetourPrevu;
+        return $this->dateRetourPrevue;
     }
-
-    public function setDateRetourPrevu(\DateTimeInterface $DateRetourPrevu): self
+ 
+    public function setDateRetourPrevue(\DateTimeInterface $dateRetourPrevue): self
     {
-        $this->DateRetourPrevu = $DateRetourPrevu;
-
+        $this->dateRetourPrevue = $dateRetourPrevue;
+ 
         return $this;
     }
-
-    public function getDateRetoutRelle(): ?\DateTimeInterface
+ 
+    public function getDateRetourReelle(): ? \DateTimeInterface
     {
-        return $this->dateRetoutRelle;
+        return $this->dateRetourReelle;
     }
-
-    public function setDateRetoutRelle(?\DateTimeInterface $dateRetoutRelle): self
+ 
+    public function setDateRetourReelle(? \DateTimeInterface $dateRetourReelle): self
     {
-        $this->dateRetoutRelle = $dateRetoutRelle;
-
+        $this->dateRetourReelle = $dateRetourReelle;
+ 
         return $this;
     }
-
-    public function getLivre(): ?Livre
+ 
+    public function getLivre(): ? Livre
     {
         return $this->livre;
     }
-
-    public function setLivre(?Livre $livre): self
+ 
+    public function setLivre(? Livre $livre): self
     {
         $this->livre = $livre;
-
+ 
         return $this;
     }
-
-    public function getAdherent(): ?Adherent
+ 
+    public function getAdherent(): ? Adherent
     {
         return $this->adherent;
     }
-
-    public function setAdherent(?Adherent $adherent): self
+ 
+    public function setAdherent(? Adherent $adherent): self
     {
         $this->adherent = $adherent;
-
+ 
         return $this;
     }
+     /**
+      *  @ORM\PrePersist
+      *
+      * @return void
+      */
+    // public function RendInDispoLivre(){
+    // 
+    //   $this->getLivre()->setDispo(false);
+    // }
 }
